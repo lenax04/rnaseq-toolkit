@@ -40,18 +40,22 @@ The toolkit can be executed via a command-line interface (CLI), directly within 
 
 # 3. Application and Performance
 
-To validate `rnaseq-toolkit`, we analyzed a public bulk RNA-seq dataset (GEO accession GSE157103) comprising transcriptomic profiles of COVID-19 patients and controls [12]. Using the CLI, the entire pipeline—from raw counts to the final HTML report—was executed with a single command:
+To validate `rnaseq-toolkit`, we analyzed three distinct bulk RNA-seq datasets: a synthetic dataset, a COVID-19 patient cohort (GEO accession GSE157103) [12], and a Neuronal Ceroid Lipofuscinosis (Batten disease) mouse model (GSE123509) [13]. Using the CLI, the entire pipeline—from raw counts to the final HTML report—can be executed with a single command:
 
 ```bash
 rnaseq-toolkit \
-    --counts GSE157103_counts.csv \
-    --metadata GSE157103_metadata.csv \
+    --counts GSE123509_counts.csv \
+    --metadata GSE123509_metadata.csv \
     --design "~condition" \
-    --contrast condition COVID19 control \
+    --contrast condition Batten control \
+    --norm-method deseq2 \
+    --dea-method deseq2 \
     --output results/
 ```
 
-The analysis successfully identified key immune response pathways upregulated in COVID-19 patients, consistent with the original publication. We also performed a benchmark comparing the PyDESeq2 implementation within `rnaseq-toolkit` against the edgeR-like method on synthetic and real datasets. The results demonstrated high concordance in log2 fold-change estimates (Pearson $r > 0.95$) and substantial overlap in identified DEGs (Jaccard index $> 0.85$), confirming the reliability of the integrated methods.
+The analysis of the Batten disease model (Tpp1-/- vs. wildtype) successfully identified key neurodegenerative markers. Notably, `Foxg1` was significantly upregulated ($\log_2\text{FC} = 10.87$, $p_{adj} < 10^{-24}$), while Purkinje cell markers `Gabra6` ($\log_2\text{FC} = -10.66$) and `Pcp2` ($\log_2\text{FC} = -10.59$) were strongly downregulated, consistent with the severe cerebellar degeneration characteristic of NCL.
+
+We performed a comprehensive benchmark comparing the PyDESeq2 implementation within `rnaseq-toolkit` against the edgeR-like method across all three datasets. The results demonstrated high concordance in log2 fold-change estimates for the synthetic ($r = 1.00$) and COVID-19 datasets ($r = 0.89$). Interestingly, in the Batten disease dataset (n=3 per group), the concordance was lower ($r = 0.396$), highlighting the sensitivity of different statistical models to small sample sizes and emphasizing the value of `rnaseq-toolkit`'s ability to easily switch between DEA methods for robust validation.
 
 # 4. Conclusion
 
@@ -71,3 +75,4 @@ The analysis successfully identified key immune response pathways upregulated in
 [10] Chen, E. Y., et al. (2013). Enrichr: interactive and collaborative HTML5 gene list enrichment analysis tool. *BMC Bioinformatics*, 14, 128.
 [11] Mölder, F., et al. (2021). Sustainable data analysis with Snakemake. *F1000Research*, 10, 33.
 [12] Overmyer, K. A., et al. (2021). Large-Scale Multi-omic Analysis of COVID-19 Severity. *Cell Systems*, 12(1), 23-40.e7.
+[13] Domowicz, M. S., et al. (2019). Global Brain Transcriptome Analysis of a Tpp1 Neuronal Ceroid Lipofuscinoses Mouse Model. *ASN Neuro*, 11, 1759091419843393.
