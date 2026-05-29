@@ -1,0 +1,69 @@
+cff-version: 1.2.0
+message: "If you use rnaseq-toolkit in your research, please cite it as below."
+type: software
+title: "rnaseq-toolkit: Streamlined Differential Expression Analysis and Pathway Enrichment Visualization from RNA-seq Data"
+version: "0.1.0"
+date-released: "2026-05-29"
+license: MIT
+repository-code: "https://github.com/rnaseq-toolkit/rnaseq-toolkit"
+url: "https://rnaseq-toolkit.readthedocs.io"
+abstract: >
+  rnaseq-toolkit is an open-source Python package that provides a unified,
+  switchable interface for RNA-seq differential expression analysis (DESeq2,
+  edgeR-like) and pathway enrichment visualization (GSEA, GO, KEGG).
+  It automates the complete pipeline from raw count matrices through
+  normalization, DEA, and pathway analysis to self-contained HTML reports,
+  enabling reproducible transcriptomic research with a single command.
+keywords:
+  - RNA-seq
+  - transcriptomics
+  - differential expression analysis
+  - DESeq2
+  - edgeR
+  - GSEA
+  - pathway enrichment
+  - bioinformatics
+  - Python
+authors:
+  - family-names: "RNAseqKit"
+    given-names: "Contributors"
+    email: "contact@rnaseqkit.org"
+references:
+  - type: article
+    title: "Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2"
+    authors:
+      - family-names: "Love"
+        given-names: "Michael I."
+      - family-names: "Huber"
+        given-names: "Wolfgang"
+      - family-names: "Anders"
+        given-names: "Simon"
+    journal: "Genome Biology"
+    volume: 15
+    issue: 12
+    year: 2014
+    doi: "10.1186/s13059-014-0550-8"
+  - type: article
+    title: "edgeR: a Bioconductor package for differential expression analysis of digital gene expression data"
+    authors:
+      - family-names: "Robinson"
+        given-names: "Mark D."
+      - family-names: "McCarthy"
+        given-names: "Davis J."
+      - family-names: "Smyth"
+        given-names: "Gordon K."
+    journal: "Bioinformatics"
+    volume: 26
+    issue: 1
+    year: 2010
+    doi: "10.1093/bioinformatics/btp616"
+  - type: article
+    title: "Gene set enrichment analysis: A knowledge-based approach for interpreting genome-wide expression profiles"
+    authors:
+      - family-names: "Subramanian"
+        given-names: "Aravind"
+    journal: "Proceedings of the National Academy of Sciences"
+    volume: 102
+    issue: 43
+    year: 2005
+    doi: "10.1073/pnas.0506580102"

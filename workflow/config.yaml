@@ -1,0 +1,29 @@
+# rnaseq-toolkit Snakemake configuration
+# Copy and modify this file for your analysis.
+
+# Input files
+counts: "data/counts.csv"
+metadata: "data/metadata.csv"
+
+# Experimental design
+design: "~condition"
+contrast:
+  - "condition"
+  - "treated"
+  - "control"
+
+# Analysis methods
+norm_method: "deseq2"    # Options: deseq2, tmm, cpm, tpm, rpkm, vst, rlog
+dea_method: "deseq2"     # Options: deseq2, edger
+
+# Pathway enrichment gene sets
+gene_sets:
+  - "KEGG_2021_Human"
+  - "GO_Biological_Process_2021"
+
+# Thresholds
+lfc_threshold: 1.0
+pval_threshold: 0.05
+
+# Output
+output_dir: "results"

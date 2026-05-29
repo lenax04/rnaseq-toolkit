@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "rnaseq_toolkit"
+version = "0.1.0"
+description = "Streamlined differential expression analysis and pathway enrichment visualization from RNA-seq data"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "RNAseqKit Contributors", email = "contact@rnaseqkit.org" }
+]
+keywords = [
+    "bioinformatics", "RNA-seq", "transcriptomics",
+    "differential expression", "DESeq2", "edgeR",
+    "GSEA", "pathway enrichment", "genomics"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=1.5.0",
+    "numpy>=1.23.0",
+    "pydeseq2>=0.4.1",
+    "matplotlib>=3.7.1",
+    "seaborn>=0.12.2",
+    "gseapy>=1.0.5",
+    "scikit-learn>=1.2.0",
+    "statsmodels>=0.14.0",
+    "scipy>=1.10.0",
+    "GEOparse>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "flake8>=6.0",
+    "mypy>=1.0",
+]
+workflow = [
+    "snakemake>=7.25.0",
+]
+docs = [
+    "sphinx>=7.0",
+    "sphinx-rtd-theme>=1.3",
+    "nbsphinx>=0.9",
+]
+
+[project.scripts]
+rnaseq-toolkit = "rnaseq_toolkit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/rnaseq-toolkit/rnaseq-toolkit"
+Documentation = "https://rnaseq-toolkit.readthedocs.io"
+Repository = "https://github.com/rnaseq-toolkit/rnaseq-toolkit"
+"Bug Tracker" = "https://github.com/rnaseq-toolkit/rnaseq-toolkit/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 88
+target-version = ["py39", "py310", "py311", "py312"]

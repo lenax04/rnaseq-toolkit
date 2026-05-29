@@ -1,0 +1,231 @@
+"""
+Snakemake workflow for rnaseq-toolkit.
+
+Usage:
+    snakemake --cores 4 --configfile config.yaml
+
+Configuration (config.yaml):
+    counts: path/to/counts.csv
+    metadata: path/to/metadata.csv
+    design: "~condition"
+    contrast: ["condition", "treated", "control"]
+    norm_method: "deseq2"
+    dea_method: "deseq2"
+    gene_sets:
+      - "KEGG_2021_Human"
+      - "GO_Biological_Process_2021"
+    output_dir: "results"
+    lfc_threshold: 1.0
+    pval_threshold: 0.05
+"""
+
+import os
+
+# ── Configuration ──────────────────────────────────────────────────────────────
+
+configfile: "workflow/config.yaml"
+
+COUNTS       = config["counts"]
+METADATA     = config["metadata"]
+DESIGN       = config.get("design", "~condition")
+CONTRAST     = config.get("contrast", None)
+NORM_METHOD  = config.get("norm_method", "deseq2")
+DEA_METHOD   = config.get("dea_method", "deseq2")
+GENE_SETS    = config.get("gene_sets", ["KEGG_2021_Human"])
+OUTPUT_DIR   = config.get("output_dir", "results")
+LFC_THR      = config.get("lfc_threshold", 1.0)
+PVAL_THR     = config.get("pval_threshold", 0.05)
+
+
+# ── Target rule ────────────────────────────────────────────────────────────────
+
+rule all:
+    input:
+        expand("{outdir}/{method}_results.csv",
+               outdir=OUTPUT_DIR, method=DEA_METHOD),
+        expand("{outdir}/normalized_counts.csv", outdir=OUTPUT_DIR),
+        expand("{outdir}/plots/volcano.png", outdir=OUTPUT_DIR),
+        expand("{outdir}/plots/pca.png", outdir=OUTPUT_DIR),
+        expand("{outdir}/plots/heatmap.png", outdir=OUTPUT_DIR),
+        expand("{outdir}/plots/ma_plot.png", outdir=OUTPUT_DIR),
+        expand("{outdir}/report.html", outdir=OUTPUT_DIR),
+
+
+# ── Normalization ──────────────────────────────────────────────────────────────
+
+rule normalize:
+    input:
+        counts   = COUNTS,
+        metadata = METADATA,
+    output:
+        norm_counts = os.path.join(OUTPUT_DIR, "normalized_counts.csv"),
+    params:
+        method     = NORM_METHOD,
+        design     = DESIGN,
+        output_dir = OUTPUT_DIR,
+    log:
+        "logs/normalize.log",
+    shell:
+        """
+        python3 -c "
+from rnaseq_toolkit import RNAseqPipeline
+pipe = RNAseqPipeline(
+    counts_path='{input.counts}',
+    metadata_path='{input.metadata}',
+    design='{params.design}',
+    output_dir='{params.output_dir}',
+)
+pipe.run_normalization(method='{params.method}')
+" 2>&1 | tee {log}
+        """
+
+
+# ── Differential Expression Analysis ──────────────────────────────────────────
+
+rule dea:
+    input:
+        counts   = COUNTS,
+        metadata = METADATA,
+        norm     = rules.normalize.output.norm_counts,
+    output:
+        results = os.path.join(OUTPUT_DIR, f"{DEA_METHOD}_results.csv"),
+    params:
+        method     = DEA_METHOD,
+        design     = DESIGN,
+        contrast   = CONTRAST,
+        output_dir = OUTPUT_DIR,
+        lfc_thr    = LFC_THR,
+        pval_thr   = PVAL_THR,
+    log:
+        "logs/dea.log",
+    shell:
+        """
+        python3 -c "
+from rnaseq_toolkit import RNAseqPipeline
+pipe = RNAseqPipeline(
+    counts_path='{input.counts}',
+    metadata_path='{input.metadata}',
+    design='{params.design}',
+    output_dir='{params.output_dir}',
+)
+pipe.run_normalization(method='{params.method}' if '{params.method}' != 'deseq2' else 'cpm')
+pipe.run_dea(
+    method='{params.method}',
+    contrast={params.contrast},
+    lfc_threshold={params.lfc_thr},
+    pval_threshold={params.pval_thr},
+)
+" 2>&1 | tee {log}
+        """
+
+
+# ── Visualization ──────────────────────────────────────────────────────────────
+
+rule visualize:
+    input:
+        results = rules.dea.output.results,
+    output:
+        volcano = os.path.join(OUTPUT_DIR, "plots", "volcano.png"),
+        pca     = os.path.join(OUTPUT_DIR, "plots", "pca.png"),
+        heatmap = os.path.join(OUTPUT_DIR, "plots", "heatmap.png"),
+        ma_plot = os.path.join(OUTPUT_DIR, "plots", "ma_plot.png"),
+    params:
+        counts     = COUNTS,
+        metadata   = METADATA,
+        design     = DESIGN,
+        norm_method = NORM_METHOD,
+        output_dir = OUTPUT_DIR,
+        lfc_thr    = LFC_THR,
+        pval_thr   = PVAL_THR,
+    log:
+        "logs/visualize.log",
+    shell:
+        """
+        python3 -c "
+from rnaseq_toolkit import RNAseqPipeline
+import pandas as pd
+pipe = RNAseqPipeline(
+    counts_path='{params.counts}',
+    metadata_path='{params.metadata}',
+    design='{params.design}',
+    output_dir='{params.output_dir}',
+)
+pipe.run_normalization(method='{params.norm_method}')
+pipe.results = pd.read_csv('{input.results}', index_col=0)
+pipe.run_visualization(
+    lfc_threshold={params.lfc_thr},
+    pval_threshold={params.pval_thr},
+)
+" 2>&1 | tee {log}
+        """
+
+
+# ── Enrichment ─────────────────────────────────────────────────────────────────
+
+rule enrichment:
+    input:
+        results = rules.dea.output.results,
+    output:
+        directory(os.path.join(OUTPUT_DIR, "enrichment")),
+    params:
+        counts     = COUNTS,
+        metadata   = METADATA,
+        design     = DESIGN,
+        gene_sets  = GENE_SETS,
+        output_dir = OUTPUT_DIR,
+        lfc_thr    = LFC_THR,
+        pval_thr   = PVAL_THR,
+    log:
+        "logs/enrichment.log",
+    shell:
+        """
+        python3 -c "
+from rnaseq_toolkit import RNAseqPipeline
+import pandas as pd
+pipe = RNAseqPipeline(
+    counts_path='{params.counts}',
+    metadata_path='{params.metadata}',
+    design='{params.design}',
+    output_dir='{params.output_dir}',
+)
+pipe.results = pd.read_csv('{input.results}', index_col=0)
+pipe.run_enrichment(
+    gene_sets={params.gene_sets},
+    lfc_threshold={params.lfc_thr},
+    pval_threshold={params.pval_thr},
+)
+" 2>&1 | tee {log}
+        """
+
+
+# ── Report ─────────────────────────────────────────────────────────────────────
+
+rule report:
+    input:
+        results     = rules.dea.output.results,
+        volcano     = rules.visualize.output.volcano,
+        enrichment  = rules.enrichment.output,
+    output:
+        report = os.path.join(OUTPUT_DIR, "report.html"),
+    params:
+        counts     = COUNTS,
+        metadata   = METADATA,
+        design     = DESIGN,
+        output_dir = OUTPUT_DIR,
+    log:
+        "logs/report.log",
+    shell:
+        """
+        python3 -c "
+from rnaseq_toolkit import RNAseqPipeline
+import pandas as pd
+pipe = RNAseqPipeline(
+    counts_path='{params.counts}',
+    metadata_path='{params.metadata}',
+    design='{params.design}',
+    output_dir='{params.output_dir}',
+)
+pipe.results = pd.read_csv('{input.results}', index_col=0)
+pipe.run_report()
+" 2>&1 | tee {log}
+        """
