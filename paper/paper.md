@@ -1,15 +1,9 @@
 ---
 title: "rnaseq-toolkit: an R/Python package for streamlined differential expression analysis and pathway enrichment visualization from RNA-seq data"
 authors:
-  - name: Dawid (First Author)
-    affiliation: 1
-  - name: Manus AI
-    affiliation: 2
-affiliations:
-  - id: 1
-    name: "Independent Researcher"
-  - id: 2
-    name: "Manus AI Research"
+  - name: Dawid Fleischer, Lena Traczuk
+  
+  
 date: "29 May 2026"
 journal: "Bioinformatics"
 type: "Application Note"
