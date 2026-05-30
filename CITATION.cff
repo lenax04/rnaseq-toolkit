@@ -25,9 +25,10 @@ keywords:
   - bioinformatics
   - Python
 authors:
-  - family-names: "RNAseqKit"
-    given-names: "Contributors"
-    email: "contact@rnaseqkit.org"
+  - family-names: "Fleischer"
+    given-names: "Dawid"
+  - family-names: "Traczuk"
+    given-names: "Lena"
 references:
   - type: article
     title: "Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2"
